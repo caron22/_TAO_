@@ -1,0 +1,256 @@
+{% extends 'app/home.html' %} <!--Trae el template-->
+{% block cuadro_style_custom %} <!--CSS Custom para este html-->
+
+  
+    
+
+
+<style>
+ /* Estilos personalizados para ajustar la altura del cuadro de texto */
+ #id_detalle,
+#id_nombre,
+#id_porcentaje,
+#id_centro_costos {
+    height: 30px;
+    margin: 0;
+    padding: 2px 12px; /* Ajusta según sea necesario */
+    vertical-align: middle;
+    }
+
+</style>      
+{% endblock cuadro_style_custom %}
+{% block titulo %}
+    Grupos de centros de costos
+{% endblock titulo %}
+
+{% block cuadro_contenido %}
+<div class="col-md-12">
+    <div class="container my-4">
+        <div class="row">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Formulario para agregar un nuevo grupo -->
+                    <div class="row">
+                        <div class="col-md-4">
+                            <form method="post" action="{% url 'grupos_centros' %}">
+                                {% csrf_token %}
+                                <div class="form-group mb-3">
+                                    <label for="{{ detalle_form.nombre.id_for_label }}" class="form-label"><b>Descripcion grupo</b></label>
+                                    {{ detalle_form.nombre }}
+                                </div>
+                                <div class="form-group">
+                                    <button class="btn btn-secondary" type="submit"><i class="fas fa-plus"></i> Agregar Grupo</button>
+                                </div>
+                            </form>
+                        </div>
+                    
+                        <div class="col-md-4">
+                        </div>
+                        <div class="col-md-4">
+                            <!-- Contenido del primer cuadro (formulario) -->
+                            <form method="post" action="{% url 'grupos_centros' %}">
+                                {% csrf_token %}
+                                <!-------------------------------->
+                                    <div class="row " >
+                                        <label for="subject" class="form-label"><b>Seleccionar grupo</b></label>
+                                        <div class="form-group col-md-12">
+                                            {{ form.detalle }}
+                                        </div>
+                                    </div>
+                                <!-------------------------------->
+                                
+                                    <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group mb-3">
+                                            <label for="subject" class="form-label"><b>Centro de costos</b></label>
+                                            {{ form.centro_costos }}
+                                        </div>
+                                    </div>
+                                <!-------------------------------->
+                                    <div class="col-md-4">
+                                        <div class="form-group mb-3">
+                                            <label for="subject" class="form-label"><b>Porcentaje</b></label>
+                                            {{ form.porcentaje }}
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if messages %}
+                                    <div class="messages">
+                                        {% for message in messages %}
+                                            {% if 'custom-success' in message.tags %}
+                                                <div class="alert alert-success">
+                                                    <i class="fas fa-check-circle fa-lg"></i> {{ message }}
+                                                </div>
+                                            {% elif 'custom-error' in message.tags %}
+                                                <div class="alert alert-danger">
+                                                    <i class="fas fa-times-circle fa-lg"></i> {{ message }}
+                                                </div>
+                                            {% else %}
+                                                <!---<div class="alert">{{ message }}</div>-->
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                                
+                                <button class="btn btn-secondary" type="submit"><i class="fas fa-save fa-lg"></i> Agregar centro a grupo</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container my-4">
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                        
+                <!----------------------------------------------------------------->
+                    <table id="example" class="display" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th class="centered bg-secondary white-text">&nbsp; Nombre</th>
+                                <th class="centered bg-secondary white-text ">Porcentaje</th>
+                                <th style="display:none;"class="centered bg-secondary white-text" ></th>
+                                <th class="centered bg-secondary white-text rounded-top-right" ></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detalle in grupos_detalles %}
+                               
+                                    <tr class="fila-madre">
+                                        <td>{{ detalle.nombre }}</td>
+                                        <td>
+                                            {{ detalle.porcentaje_acumulado|floatformat }}%
+                                            {% if detalle.porcentaje_acumulado == 100 %}
+                                                <i class="fas fa-check text-secondary"></i>
+                                            {% endif %}
+                                        </td>
+                                        <td style="display:none;">
+                                            {% for registro in detalle.grupos_registro_set.all %}
+                                                {{ registro.centro_costos }} : ({{ registro.porcentaje|floatformat }}%)
+                                                {% if not forloop.last %}<br>{% endif %}
+                                            {% endfor %}
+                                        </td>
+                                        <td class="text-right text-sm">                                        
+                                          <!--  <a href="{% if detalle.id %}{% url 'grupos_edit' detalle.id %}{% endif %}" class="btn btn-sm btn-secondary"><i class="fas fa-pen"></i></a> -->
+                                            <a href="{% if detalle.id %}{% url 'grupos_delete' detalle.id %}{% endif %}" class="btn btn-sm btn-danger eliminarConfirmacion"> <i class="fas fa-trash"></i></a>
+                                        </td>
+                                    </tr>
+                                
+                            {% endfor %}
+                        </tbody>   
+                        <caption>DataTable TAO</caption>                            
+                    </table>
+                    
+                    <!----------------------------------------------------------------->
+                        </div>
+                    
+                </div>
+            </div>
+        </div>
+<script>
+    $(document).ready(function() {
+        $.extend(true, $.fn.dataTable.defaults, {
+            language: {
+                zeroRecords: "Ningún registro encontrado",
+                
+                infoEmpty: "Ningún registro encontrado",
+                infoFiltered: "(filtrados desde _MAX_ registros totales)",
+                loadingRecords: "Cargando...",
+                
+            },
+            lengthChange: false,  // Oculta "Show entries"
+            searching: false,     // Oculta "Search"
+            paging: false ,         // Oculta los controles de paginación
+            info: false
+        });
+
+        // Resto de tu código DataTables...
+    });
+               // Función para formatear los detalles
+               $(document).ready(function() {
+       var table = $('#example').DataTable({
+           ordering: false
+       });
+   
+       // Agrega el evento de clic para abrir y cerrar detalles
+       $('#example tbody').on('click', 'td.details-control', function() {
+           var tr = $(this).closest('tr');
+           var row = table.row(tr);
+   
+           // Cambia el icono a "+" o "-" según el estado de la fila
+           var iconElement = tr.find('.icon-toggle');
+           iconElement.toggleClass('fa-plus-circle fa-minus-circle');
+   
+           if (row.child.isShown()) {
+               // Esta fila ya está abierta, ciérrala
+               row.child.hide();
+               tr.removeClass('shown');
+           } else {
+               // Abre esta fila
+               row.child(format(row.data())).show();
+               tr.addClass('shown');
+           }
+       });
+   
+       // Función para formatear los detalles
+       function format(d) {
+           if (d[2]) {
+               return (
+                   '<dl>' +
+                   '<dt>Centro de Costos:</dt>' +
+                   '<dd>' + d[2] + '</dd>' +
+                   '</dl>'
+               );
+           } else {
+               return '<p>No hay detalles disponibles</p>';
+           }
+       }
+   
+       // Agrega un botón de expansión en la primera celda de cada fila
+       $('#example tbody tr').each(function() {
+           var firstCell = $(this).find('td:first-child');
+           firstCell.addClass('details-control');
+           firstCell.html('<i class="fas fa-plus-circle fa-lg icon-toggle text-secondary"></i> ' + firstCell.html());
+       });
+   
+       // Agrega el evento de clic para abrir y cerrar detalles cuando se hace clic en el icono
+       $('#example tbody').on('click', 'td.details-control .icon-toggle', function(e) {
+           e.stopPropagation(); // Evita que el clic se propague a la fila completa
+           $(this).closest('td.details-control').trigger('click');
+       });
+   });
+   
+</script>
+
+{% endblock cuadro_contenido %}
+
+
+
+
+VALIDACIONES  PARA NO PERDER
+{% for detalle in grupos_detalles %}
+{% if detalle.grupos_registro_set.all|length > 0 or detalle.porcentaje_acumulado > 0 %}
+    <tr class="fila-madre">
+        <td>{{ detalle.nombre }}</td>
+        <td>
+            {{ detalle.porcentaje_acumulado|floatformat }}%
+            {% if detalle.porcentaje_acumulado == 100 %}
+                <i class="fas fa-check text-secondary"></i>
+            {% endif %}
+        </td>
+        <td style="display:none;">
+            {% for registro in detalle.grupos_registro_set.all %}
+                {{ registro.centro_costos }} : ({{ registro.porcentaje|floatformat }}%)
+                {% if not forloop.last %}<br>{% endif %}
+            {% endfor %}
+        </td>
+        <td class="text-right text-sm">                                        
+          <!--  <a href="{% if detalle.id %}{% url 'grupos_edit' detalle.id %}{% endif %}" class="btn btn-sm btn-secondary"><i class="fas fa-pen"></i></a> -->
+            <a href="{% if detalle.id %}{% url 'grupos_delete' detalle.id %}{% endif %}" class="btn btn-sm btn-secondary eliminarConfirmacion"> <i class="fas fa-trash"> Borrar</i></a>
+        </td>
+    </tr>
+{% endif %}
+{% endfor %}

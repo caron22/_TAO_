@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <title>TAO</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Bootstrap-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous" />
+    <!-- DataTable -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,500;1,400;1,500&display=swap" rel="stylesheet">
+    <!-- Custom CSS 
+    <link rel="stylesheet" href="{%static 'css/estilos.css'%}">-->
+    <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon"> 
+    
+</head>
+
+<body>
+    {% include 'app/navchar.html' %}
+    <!-- Formulario de Registro -->
+    <form method="post" action="{% url 'agregar_registro' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Guardar Registro</button>
+    </form>
+
+    <!-- Tabla de Registros -->
+    <h3>Registros existentes:</h3>
+    <table id="filterTable">
+        <thead>
+            <tr>
+                <th>Detalle</th>
+                <th>Grupos Nombre</th>
+                <th>Centro Costos</th>
+                <th>Porcentaje</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in grupos_detalles %}
+                <tr>
+                    <td>{{ detalle.nombre }}</td>
+                    <td>
+                        {% for registro in detalle.grupos_registro_set.all %}
+                            {{ registro.grupos_nombre }}
+                            <!-- Puedes agregar más detalles aquí si es necesario -->
+                        {% endfor %}
+                    </td>
+                    <td>{% if detalle.grupos_registro_set.all.0.centro_costos %}{{ detalle.grupos_registro_set.all.0.centro_costos.nombre }}{% endif %}</td>
+                    <td>{{ detalle.porcentaje_acumulado }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Mostrar Totales -->
+    <p>Total Porcentaje: {{ total_porcentaje }}%</p>
+    <p>Falta Porcentaje: {{ falta_porcentaje }}%</p>
+
+    <!-- jQuery y DataTables JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+
+    <!-- Configuración de DataTables -->
+    <script>
+       $(document).ready(function() {
+    var table = $('#filterTable').DataTable({
+        ordering: false
+    });
+
+    // Oculta las columnas de hijas al inicio
+    $('#filterTable thead th:not(:first-child)').hide();
+    $('#filterTable tbody tr.parent td:not(:first-child)').hide();
+
+    // Agrega el evento de clic para abrir y cerrar detalles
+    $('#filterTable tbody').on('click', 'tr.parent', function() {
+        var tr = $(this);
+        var row = table.row(tr);
+
+        if (row.child.isShown()) {
+            // Esta fila ya está abierta, ciérrala
+            row.child.hide();
+            tr.removeClass('shown');
+        } else {
+            // Abre esta fila
+            row.child(format(row.data())).show();
+            tr.addClass('shown');
+        }
+    });
+
+    // Función para formatear los detalles
+    function format(data) {
+        return (
+            '<dl>' +
+            '<dt>Nombre:</dt>' +
+            '<dd>' + data[1] + '</dd>' +  // Ajusta el índice según tus datos
+            '<dt>Centro Costos:</dt>' +
+            '<dd>' + data[2] + '</dd>' +  // Ajusta el índice según tus datos
+            '<dt>Porcentaje:</dt>' +
+            '<dd>' + data[3] + '</dd>' +  // Ajusta el índice según tus datos
+            '</dl>'
+        );
+    }
+});
+    </script>
+
+    <script src="{% static 'js/config.js' %}"></script>
+    {% include 'app/footer.html' %}
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>DataTables Ejemplo</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+</head>
+<body>
+
+<table id="example" class="display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th style="display:none;">Posición</th>
+            <th style="display:none;">Oficina</th>
+            <th >Porcentaje</th>
+        
+        </tr>
+    </thead>
+    <tbody>
+        {% for detalle in grupos_detalles %}
+        <tr>
+            <td>{{ detalle.nombre }}</td>
+            <td style="display:none;">{% for registro in detalle.grupos_registro_set.all %}{{ registro.grupos_nombre }}<!-- Puedes agregar más detalles aquí si es necesario -->{% endfor %}</td>
+            <td style="display:none;">{% if detalle.grupos_registro_set.all.0.centro_costos %}{{ detalle.grupos_registro_set.all.0.centro_costos.nombre }}{% endif %}</td>
+            <td >{{ detalle.porcentaje_acumulado }}</td>
+            
+        </tr>
+    {% endfor %}
+      
+        <!-- Otras filas... -->
+    </tbody>
+</table>
+
+<script>
+    $(document).ready(function() {
+        var table = $('#example').DataTable({
+            ordering: false
+        });
+
+        // Agrega el evento de clic para abrir y cerrar detalles
+        $('#example tbody').on('click', 'td', function() {
+            var tr = $(this).closest('tr');
+            var row = table.row(tr);
+
+            if (row.child.isShown()) {
+                // Esta fila ya está abierta, ciérrala
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                // Abre esta fila
+                row.child(format(row.data())).show();
+                tr.addClass('shown');
+            }
+        });
+
+        // Función para formatear los detalles
+        function format(d) {
+            return (
+                '<dl>' +
+                '<dt>Nombre completo:</dt>' +
+                '<dd>' + d[0] + '</dd>' +
+                '<dt>Posición:</dt>' +
+                '<dd>' + d[1] + '</dd>' +
+                '<dt>Oficina:</dt>' +
+                '<dd>' + d[2] + '</dd>' +
+                '<dt>Edad:</dt>' +
+                '<dd>' + d[3] + '</dd>' +
+                
+                '</dl>'
+            );
+        }
+    });
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>DataTables Ejemplo</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+</head>
+<body>
+
+    <form method="post" action="{% url 'agregar_registro' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Guardar Registro</button>
+    </form>
+
+    <table id="example" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Porcentaje</th>
+                <th style="display:none;">Centro Costos</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in grupos_detalles %}
+            <tr>
+                <td>{{ detalle.nombre }}</td>
+                <td>{{ detalle.porcentaje_acumulado }}</td>
+                <td style="display:none;">
+                    {% for registro in detalle.grupos_registro_set.all %}
+                        {{ registro.centro_costos }} : {{ registro.porcentaje }}%
+                        {% if not forloop.last %}<br>{% endif %}
+                    {% endfor %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+            var table = $('#example').DataTable({
+                ordering: false
+            });
+    
+            // Agrega el evento de clic para abrir y cerrar detalles
+            $('#example tbody').on('click', 'td', function() {
+                var tr = $(this).closest('tr');
+                var row = table.row(tr);
+    
+                if (row.child.isShown()) {
+                    // Esta fila ya está abierta, ciérrala
+                    row.child.hide();
+                    tr.removeClass('shown');
+                } else {
+                    // Abre esta fila
+                    row.child(format(row.data())).show();
+                    tr.addClass('shown');
+                }
+            });
+    
+            // Función para formatear los detalles
+            function format(d) {
+                if (d[2]) {
+                    return (
+                        '<dl>' +
+                        '<dt>Centro de Costos:</dt>' +
+                        '<dd>' + d[2] + '</dd>' +
+                        
+                        '</dl>'
+                    );
+                } else {
+                    return '<p>No hay detalles disponibles</p>';
+                }
+            }
+        });
+    </script>
+    
+
+</body>
+</html>

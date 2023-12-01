@@ -1,0 +1,131 @@
+{% extends 'app/home.html' %} <!--Trae el template-->
+{% block cuadro_style_custom %} <!--CSS Custom para este html-->
+<style>
+    thead th:first-child {
+    border-radius: 6px 0 0 0; /* Redondea solo la esquina superior izquierda */
+    }
+    thead th:last-child {
+    border-radius: 0 6px 0 0; /* Redondea solo la esquina superior derecha */
+    }
+    .white-text {
+    color: white !important; /* Agrega !important para asegurar que la regla prevalezca */
+    }
+    .text-right {
+    text-align: right;
+    }
+</style>       
+{% endblock cuadro_style_custom %}
+{% block titulo %}
+    Centro de costos
+{% endblock titulo %}
+
+{% block cuadro_contenido %}
+    <!-- Primer cuadro -->
+<div class="col-md-12">
+    <div class="container my-4">
+        <div class="row">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Contenido del primer cuadro (formulario) -->
+                    {% if centrodecostos_update_form %}
+                    
+                    <form id="formulario" method="post" action="{% url 'centrodecostos_update' %}">
+                        {% csrf_token %}
+                        <div class="row g-3 align-items-center">
+                            <div class="col-auto">
+                                <!-- Segundo cuadro de texto -->
+                                
+                                <label for="unidad" class="form-label"><b>Descripción centro de costos </b></label>
+                                <input type="text" value="{{ centrodecostos_update_form.unidad }}" class="form-control" name="unidad"
+                                    id="unidad" aria-describedby="emailHelp" minlength="3" maxlength="30" autofocus required>
+                            </div>
+                            <div class="col-auto">
+                                <!-- Primer cuadro de texto -->
+                                <label for="task_id" class="form-label"><b>Unidad de medida </b></label>
+                                <select class="form-select" name="task_id" id="task_id">
+                                    {% for tarea in subjects %}
+                                        <option value="{{ tarea.id }}" {% if tarea.id == centrodecostos_update_form.task.id %}selected{% endif %}>{{ tarea.subject }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            
+                            <div class="col-auto" style="margin-top: 47px;"> <!-- Añadido margin-top -->
+                                <!-- Botón Guardar con ancho del 20% -->
+                                <input type="hidden" name="id" value="{{ centrodecostos_update_form.id }}" />
+                                <button type="submit" class="btn btn-secondary w-100">Modificar</button>
+                            </div>
+                        </div>
+                    </form>
+                    {% else %}
+                    <form id="formulario" method="post" action="{% url 'centrodecostos_insert' %}">
+                        {% csrf_token %}
+                        <div class="row g-3 align-items-center">
+                            <div class="col-auto">
+                                <!-- Segundo cuadro de texto -->
+                                <label for="task_id" class="form-label"><b>Descripción centro de costos</b></label>
+                                <input type="text" class="form-control" name="unidad" id="unidad" aria-describedby="emailHelp" placeholder="Escribe algo..." minlength="3" maxlength="30"  autofocus required>
+                            </div>
+                            {% csrf_token %}
+                            <div class="col-auto">
+                                <!-- Primer cuadro de texto -->
+                                <label for="unidad" class="form-label"><b>Unidad de medida </b></label>
+                                <select class="form-select" name="task_id" id="task_id">
+                                    {% for subject in subjects %}
+                                        <option value="{{ subject.id }}" >{{ subject.subject }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-auto" style="margin-top: 47px;"> <!-- Añadido margin-top -->
+                                <!-- Botón Guardar con ancho del 20% -->
+                                <input type="hidden" name="id" value="{{ centrodecostos_update_form.id }}" />
+                                <button type="submit" class="btn btn-secondary w-100">Agregar</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    {% endif %}
+                </div><!--3-->
+            </div><!--2-->
+        </div><!--1--> 
+    </div><!--1--> 
+</div><!--1-->
+<!-- Segundo cuadro -->
+<div class="col-md-12">
+    <div class="container my-4">
+        <div class="row">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Contenido del segundo cuadro (tabla, formularios, etc.) -->
+                    <table id="datatable_users" class="table table-striped table-sm">
+                        <thead>
+                            <tr>
+
+                                <th class="centered bg-secondary white-text">&nbsp; ID</th>
+                                <th class="centered bg-secondary white-text">Descripcion</th>
+                                <th class="centered bg-secondary white-text" colspan="2">Unidad</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for datas in db_data %}
+                                <tr>
+                                    <td class="text-sm">&nbsp; {{ datas.id }}</td>
+                                    <td class="text-sm">{{ datas.unidad }}</td> 
+                                    <td class="text-sm">{{ datas.task.subject }}</td>
+                                    <td class="text-right text-sm">
+                                        <a href="{% url 'centrodecostos_update_form' datas.id %}" class="btn btn-primary btn-sm"><i class="fas fa-pen"></i></a>
+                                        <a href="{% url 'centrodecostos_delete' datas.id %}" class="btn btn-danger btn-sm eliminarConfirmacion"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                    </table>
+                    <caption>DataTable TAO</caption>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock cuadro_contenido %}

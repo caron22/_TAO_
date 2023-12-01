@@ -1,0 +1,623 @@
+{% extends 'app/home.html' %} <!--Trae el template-->
+{% block cuadro_style_custom %} <!--CSS Custom para este html-->
+<style>   
+
+.custom-select {
+    margin-top: 0px;
+    margin-bottom: 12px;
+    align-items: center;
+    width: 180px;
+    margin-left: 25px;
+    display: inline-block;
+}
+
+/*------------------------------------------------------------------------------------------------*/
+thead th:first-child {
+border-radius: 6px 0 0 0; /* Redondea solo la esquina superior izquierda */
+}
+thead th:last-child {
+border-radius: 0 6px 0 0; /* Redondea solo la esquina superior derecha */
+}
+
+/*------------------------------------------------------------------------------------------------*/
+#filterTable thead th {
+        padding: 4px; /* Ajusta este valor según tus preferencias */
+    }
+
+#datatable_users tbody tr {
+    height: 30px; /* Ajusta la altura según tus preferencias */
+}
+
+
+#datatable_users tbody td,
+#filterTable tbody td {
+    padding: 2px; /* Ajusta este valor según tus preferencias */
+}
+</style>     
+{% endblock cuadro_style_custom %}
+{% block titulo %}
+    Concepto
+{% endblock titulo %}
+
+{% block cuadro_contenido %}
+<div class="col-md-12">
+    <div class="container my-4">
+        <div class="row">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Formulario para agregar un nuevo grupo -->
+                    <form method="post" action="{% if edit_mode %}{% url 'pruebas_edit' pruebasForm_id=edit_id %}{% else %}{% url 'pruebas_view' %}{% endif %}">
+                        {% csrf_token %}
+                        
+                        <div class="row g-3 align-items-center">
+                            <div class="col-md-3">
+                                <!-- Segundo cuadro de texto -->
+                                <label class="form-label col-md-12"><b>Descripción centro de costos</b></label>
+                                {{ form.codigo_ex }}
+                            </div>
+                            {% csrf_token %}
+                            <div class="col-md-3">
+                                <!-- Primer cuadro de texto -->
+                                <label class="form-label col-md-12 "><b>Centro de costos</b></label>
+                                {{ form.centro_costos }}
+                            </div>
+                            <div class="col-md-3">
+                                <!-- Primer cuadro de texto -->
+                                <label class="form-label col-md-12"><b>Grupos de centros </b></label>
+                                {{ form.grupos_detalle }}
+                            </div>
+                            <div class="col-auto" style="margin-top: 47px;"> <!-- Añadido margin-top -->
+
+                                {% if edit_mode %}
+                                    <button type="submit" class="btn btn-primary w-33"><i class="fas fa-save fa-lg"></i> Grabar</button>
+                                    <button type="button" class="btn btn-warning w-33" onclick="cancelForm()"><i class="fas fa-times fa-lg"></i> Cancelar</button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-secondary w-33"><i class="fas fa-plus "></i> Agregar</button>
+                                {% endif %}
+                                    
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container my-4">
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+              
+                <div class="category-filter"> 
+                    <select id="categoryFilter" class="form-control custom-select">
+                        <option value="">Filtro Grupos</option>
+                        {% for categoria in Grupos_detalle_filtros %}
+                        <option value="{{ categoria }}">{{ categoria }}</option> 
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <!-- Create the second drop-down filter -->
+                <div class="category-filter">
+                    <select id="anotherFilter" class="form-control custom-select">
+                        <option value=""></i>Filtro centro costos</option><i class="fas fa-filter">
+                        {% for categoria in Centro_costos_filtros %}
+                        <option value="{{ categoria }}">{{ categoria }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                
+                <!-- Set up the datatable -->
+                <table id="filterTable" class="table table-striped">
+                    <caption>DataTable TAO</caption>
+                    <thead>
+                        <tr>
+                            <th class="centered bg-secondary white-text">&nbsp;ID</th>
+                            
+                            <th class="centered bg-secondary white-text">CodigoExterno</th>
+                            <th class="centered bg-secondary white-text">IDCentroCosto</th>
+                            <th class="centered bg-secondary white-text">IDGrupoCentros</th>
+                            <th class="centered bg-secondary white-text"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in db_data %}
+                        <tr>
+                            <td class="text-sm">&nbsp;{{ data.id }}</td>
+                            
+                            <td class="text-sm">{{ data.codigo_ex }}</td>
+                            <td class="text-sm">{{ data.centro_costos|default:"" }}</td>
+                            <td class="text-sm">
+                                {% if data.grupos_detalle %}
+                                {{ data.grupos_detalle|default:"" }}   {{ data.grupos_detalle.porcentaje_acumulado|floatformat:0 }}%
+                                {% else %}
+                                   
+                                {% endif %}
+                                
+                            
+                            </td>
+                           
+                            <td class="text-right text-sm">
+                                
+                                <a  href="{% url 'pruebas_edit' data.id %}" class="btn btn-sm btn-primary"><i class="fas fa-pen"></i></a>
+                                <!-- <a href="{% url 'pruebas_delete' data.id %}" class="btn btn-sm btn-secondary elimanarConfirmacion"><i class="fas fa-trash"></i></a> -->
+                                <a href="{% url 'pruebas_delete' data.id %}" class="btn btn-sm btn-danger  eliminarConfirmacion"><i class="fas fa-trash"></i></a>
+                            </td>           
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    function cancelForm() {
+            // Obtener todos los elementos de entrada del formulario
+            var formElements = document.forms[0].elements;
+    
+            // Iterar sobre los elementos y restablecer sus valores
+            for (var i = 0; i < formElements.length; i++) {
+                // Verificar si el elemento es un campo de entrada
+                if (formElements[i].type !== "button" && formElements[i].type !== "submit") {
+                    formElements[i].value = "";
+                }
+            }
+            window.location.href = "{% url 'pruebas_view' %}";
+        }
+            
+            $(document).ready(function () {
+                
+                // Set up DataTable with options
+                var table = $('#filterTable').DataTable({
+                    searching: true, // Asegúrate de incluir esta opción para habilitar la búsqueda global
+                  
+                    lengthMenu: [5, 10, 15, 20, 100],
+                    columnDefs: [
+                        { className: "centered", targets: [0, 1, 2, 3, 4] },
+                        { orderable: false, targets: [4] },
+                        { searchable: false, targets: [1] }
+                    ],
+                    order: [[0, 'dec']], // Ordena por la segunda columna (Fecha) de forma ascendente al inicio
+                    language: {
+                        lengthMenu: "<i class='fas fa-list fa-lg text-secondary'></i> _MENU_",
+                        zeroRecords: "Ningún registro encontrado",
+                        info: "Mostrando de _START_ a _END_ de un total de _TOTAL_ registros",
+                        infoEmpty: "Ningún registro encontrado",
+                        infoFiltered: "(filtrados desde _MAX_ registros totales)",
+                        search: "<i class='fas fa-search fa-lg text-secondary'></i>",
+                        loadingRecords: "Cargando...",
+                        paginate: {
+                            first: "Primero",
+                            last: "Último",
+                            next: "<i class='fas fa-arrow-right '></i>",
+                            previous: "<i class='fas fa-arrow-left'></i>"
+                            
+                        }
+                        
+                    }
+    
+    
+                });
+    
+                // Move the second category filter dropdown
+                $("#filterTable_filter.dataTables_filter").append($("#anotherFilter"));
+    
+                // Move the first category filter dropdown
+                $("#filterTable_filter.dataTables_filter").append($("#categoryFilter"));
+    
+              
+    
+                 // Use the built-in DataTables API to filter rows for the second filter
+                 $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                    var selectedItem = $('#anotherFilter').val();
+                    // Adjust the index accordingly for the second filter
+                    var category = data[2]; // Assuming Centro_costos is at index 4
+                    return selectedItem === "" || category.includes(selectedItem);
+                });
+                // Use the built-in DataTables API to filter rows for the first filter
+                $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                    var selectedItem = $('#categoryFilter').val();
+                    var category = data[3]; // Assuming Centro_costos is at index 4
+                    return selectedItem === "" || category.includes(selectedItem);
+                });
+              
+              
+                
+    
+                // Redraw the datatable on filter change for the first filter
+                $("#categoryFilter").change(function () {
+                    table.draw();
+                });
+    
+                // Redraw the datatable on filter change for the second filter
+                $("#anotherFilter").change(function () {
+                    table.draw();
+                });
+    
+    
+    
+                // Agrega un evento de cambio para el campo "desde"
+                $('#dateFrom').on('change', function () {
+                    applyDateRangeFilter();
+                });
+    
+                // Agrega un evento de cambio para el campo "hasta"
+                $('#dateTo').on('change', function () {
+                    applyDateRangeFilter();
+                });
+    
+                // Agrega un evento de clic para el botón de búsqueda por rango de fechas
+                $('#searchDateRangeButton').on('click', function () {
+                    applyDateRangeFilter();
+                });
+    
+                // Función para aplicar el filtro de rango de fechas
+                function applyDateRangeFilter() {
+                    var dateFromValue = $('#dateFrom').val();
+                    var dateToValue = $('#dateTo').val();
+    
+                    // Aplica el filtro de rango de fechas
+                    table.column(1).search(dateFromValue + '|' + dateToValue, true, false).draw();
+                }
+    
+         
+                table.draw();
+            });
+        </script>
+{% endblock cuadro_contenido %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <title>TAO</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Bootstrap-->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous" />
+    <!-- DataTable -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/jquery.dataTables.min.css" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,500;1,400;1,500&display=swap" rel="stylesheet">
+    <!-- Custom CSS 
+    <link rel="stylesheet" href="{%static 'css/estilos.css'%}">-->
+    <link rel="icon" href="{% static 'img/favicon.ico' %}" type="image/x-icon">
+
+    <style>
+        .category-filter {
+            margin-bottom: 10px;  /* Agregué un margen inferior para separar los selects */
+        }
+    
+        select.form-control {
+            margin-top: 0px;  /* Ajusta el margen superior según sea necesario */
+            margin-bottom: 12px;  /* Ajusta el margen inferior según sea necesario */
+            align-items: center;
+            width: 180px;
+            margin-left: 25px;
+           /* width: 60%;   Hace que los selects ocupen el ancho completo del contenedor */
+          /*  max-width: 55px;   Establece un ancho máximo para evitar que sean demasiado anchos */
+            display: inline-block;  /* Permite que los selects se muestren en línea */
+           /* margin-right: 0px;   Añade un margen derecho para separar los selects */
+        }
+
+
+        #filterTable tbody td {
+        height: 0px; /* Ajusta la altura de las celdas según tus necesidades */
+        vertical-align: middle; /* Centra el contenido verticalmente en las celdas */
+        overflow: hidden; /* Oculta el contenido que excede el ancho máximo */
+        text-overflow: ellipsis; /* Añade puntos suspensivos para indicar contenido truncado */
+        white-space: nowrap; /* Evita que el texto se divida en varias líneas */
+}
+
+/*-----------------------------------------------------------------------*/
+
+/* Ajusta el tamaño, agrega bordes redondeados y cambia el color de fondo al cuadro que rodea los números de página */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    background-color: #6c757d; /* Color de fondo de btn-secondary en Bootstrap */
+    color: #fff; /* Color del texto */
+    padding: 3px 10px; /* Ajusta el espacio interno según tus necesidades */
+    border-radius: 5px; /* Añade bordes redondeados */
+}
+
+/* Ajusta el tamaño, agrega bordes redondeados y cambia el color de fondo al cuadro del botón de paginación activo */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #5a6268; /* Color de fondo de btn-secondary en Bootstrap */
+    color: #fff; /* Color del texto */
+    padding: 3px 10px; /* Ajusta el espacio interno según tus necesidades */
+    border-radius: 5px; /* Añade bordes redondeados */
+}
+
+/* Ajusta el tamaño, agrega bordes redondeados y cambia el color de fondo al cuadro de los botones "Anterior" y "Siguiente" */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous, 
+.dataTables_wrapper .dataTables_paginate .paginate_button.next {
+    background-color: #6c757d; /* Color de fondo de btn-secondary en Bootstrap */
+    color: #fff; /* Color del texto */
+    padding: 3px 10px; /* Ajusta el espacio interno según tus necesidades */
+    border-radius: 5px; /* Añade bordes redondeados */
+}
+
+/* Cambia el color de fondo de los botones "Anterior" y "Siguiente" cuando están deshabilitados */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous.disabled, 
+.dataTables_wrapper .dataTables_paginate .paginate_button.next.disabled {
+    background-color: #f8f9fa; /* Cambia el color de fondo cuando los botones están deshabilitados */
+    color: #6c757d; /* Cambia el color del texto cuando los botones están deshabilitados */
+}
+
+/*------------------------------------------------------------------------------------------------*/
+
+/* Ajusta el espacio entre "Mostrar registros" y el cuadro de búsqueda */
+.dataTables_length,
+.dataTables_filter {
+    
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 20px; /* Puedes ajustar el valor según la cantidad de espacio que desees */
+}
+
+
+/*------------------------------------------------------------------------------------------------*/
+thead th:first-child {
+    border-radius: 10px 0 0 0; /* Redondea solo la esquina superior izquierda */
+}
+thead th:last-child {
+    border-radius: 0 10px 0 0; /* Redondea solo la esquina superior derecha */
+}
+
+.white-text {
+    color: white !important; /* Agrega !important para asegurar que la regla prevalezca */
+}
+
+/*------------------------------------------------------------------------------------------------*/
+.text-right {
+    text-align: right;
+}   
+nav.navbar {
+        margin-top: 10px !important;
+        padding-top: 30px !important;
+    }    
+    
+</style>
+    
+</head>
+
+<body>
+   
+    <div class="container main-content">
+        {% include 'app/navchar.html' %}
+        <div class="card ">
+            <div class="card-body">
+                <div class="display-6">
+                    <h2><b>Conceptos</b></h2>
+                </div>
+                <div class="col-md-4">
+                    <div class="container my-4">
+                        <div class="row">
+                            <div class="card">
+                                <div class="card-body">
+                                    <!-- Cuadro de guardar -->
+                                
+                                    <form method="post" action="{% if edit_mode %}{% url 'pruebas_edit' pruebasForm_id=edit_id %}{% else %}{% url 'pruebas_view' %}{% endif %}">
+                                        {% csrf_token %}
+                                    
+                                        {{ form.as_p }}
+                                    
+                                        {% if edit_mode %}
+                                            <button type="submit" class="btn btn-primary  w-33"><i class="fas fa-save fa-lg"></i> Grabar</button>
+                                            <button type="button" class="btn btn-warning  w-33" onclick="cancelForm()"><i class="fas fa-times fa-lg"></i> Cancelar</button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-secondary w-33"><i class="fas fa-plus "></i> Agregar</button>
+                                        {% endif %}
+                                    </form>
+                                </div>
+                                
+                            
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container my-4">
+            <div class="row">
+                <div class="card">
+                    <div class="card-body">
+                      
+                        <div class="category-filter"> 
+                            <select id="categoryFilter" class="form-control">
+                                <option value="">Filtro Grupos</option>
+                                {% for categoria in Grupos_detalle_filtros %}
+                                <option value="{{ categoria }}">{{ categoria }}</option> 
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Create the second drop-down filter -->
+                        <div class="category-filter">
+                            <select id="anotherFilter" class="form-control">
+                                <option value=""></i>Filtro centro costos</option><i class="fas fa-filter">
+                                {% for categoria in Centro_costos_filtros %}
+                                <option value="{{ categoria }}">{{ categoria }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Set up the datatable -->
+                        <table id="filterTable" class="table table-striped">
+                            <caption>DataTable TAO</caption>
+                            <thead>
+                                <tr>
+                                    <th class="centered bg-secondary white-text">ID</th>
+                                    
+                                    <th class="centered bg-secondary white-text">CodigoExterno</th>
+                                    <th class="centered bg-secondary white-text">IDCentroCosto</th>
+                                    <th class="centered bg-secondary white-text">IDGrupoCentros</th>
+                                    <th class="centered bg-secondary white-text"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for data in db_data %}
+                                <tr>
+                                    <td class="text-sm">{{ data.id }}</td>
+                                    
+                                    <td class="text-sm">{{ data.codigo_ex }}</td>
+                                    <td class="text-sm">{{ data.centro_costos|default:"" }}</td>
+                                    <td class="text-sm">
+                                        {% if data.grupos_detalle %}
+                                        {{ data.grupos_detalle|default:"" }}   {{ data.grupos_detalle.porcentaje_acumulado|floatformat:0 }}%
+                                        {% else %}
+                                           
+                                        {% endif %}
+                                        
+                                    
+                                    </td>
+                                   
+                                    <td class="text-right text-sm">
+                                        
+                                        <a  href="{% url 'pruebas_edit' data.id %}" class="btn btn-sm btn-secondary"><i class="fas fa-pen"></i></a>
+                                        <!-- <a href="{% url 'pruebas_delete' data.id %}" class="btn btn-sm btn-secondary elimanarConfirmacion"><i class="fas fa-trash"></i></a> -->
+                                        <a href="{% url 'pruebas_delete' data.id %}" class="btn btn-sm btn-secondary eliminarConfirmacion"><i class="fas fa-trash"></i></a>
+                                    </td>           
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    
+
+    
+    <script>
+
+function cancelForm() {
+        // Obtener todos los elementos de entrada del formulario
+        var formElements = document.forms[0].elements;
+
+        // Iterar sobre los elementos y restablecer sus valores
+        for (var i = 0; i < formElements.length; i++) {
+            // Verificar si el elemento es un campo de entrada
+            if (formElements[i].type !== "button" && formElements[i].type !== "submit") {
+                formElements[i].value = "";
+            }
+        }
+        window.location.href = "{% url 'pruebas_view' %}";
+    }
+        
+        $(document).ready(function () {
+            
+            // Set up DataTable with options
+            var table = $('#filterTable').DataTable({
+                searching: true, // Asegúrate de incluir esta opción para habilitar la búsqueda global
+              
+                lengthMenu: [5, 10, 15, 20, 100],
+                columnDefs: [
+                    { className: "centered", targets: [0, 1, 2, 3, 4] },
+                    { orderable: false, targets: [4] },
+                    { searchable: false, targets: [1] }
+                ],
+                order: [[0, 'dec']], // Ordena por la segunda columna (Fecha) de forma ascendente al inicio
+                language: {
+                    lengthMenu: "<i class='fas fa-list fa-lg text-secondary'></i> _MENU_",
+                    zeroRecords: "Ningún registro encontrado",
+                    info: "Mostrando de _START_ a _END_ de un total de _TOTAL_ registros",
+                    infoEmpty: "Ningún registro encontrado",
+                    infoFiltered: "(filtrados desde _MAX_ registros totales)",
+                    search: "<i class='fas fa-search fa-lg text-secondary'></i>",
+                    loadingRecords: "Cargando...",
+                    paginate: {
+                        first: "Primero",
+                        last: "Último",
+                        next: "<i class='fas fa-arrow-right '></i>",
+                        previous: "<i class='fas fa-arrow-left'></i>"
+                        
+                    }
+                    
+                }
+
+
+            });
+
+            // Move the second category filter dropdown
+            $("#filterTable_filter.dataTables_filter").append($("#anotherFilter"));
+
+            // Move the first category filter dropdown
+            $("#filterTable_filter.dataTables_filter").append($("#categoryFilter"));
+
+          
+
+             // Use the built-in DataTables API to filter rows for the second filter
+             $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                var selectedItem = $('#anotherFilter').val();
+                // Adjust the index accordingly for the second filter
+                var category = data[2]; // Assuming Centro_costos is at index 4
+                return selectedItem === "" || category.includes(selectedItem);
+            });
+            // Use the built-in DataTables API to filter rows for the first filter
+            $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+                var selectedItem = $('#categoryFilter').val();
+                var category = data[3]; // Assuming Centro_costos is at index 4
+                return selectedItem === "" || category.includes(selectedItem);
+            });
+          
+          
+            
+
+            // Redraw the datatable on filter change for the first filter
+            $("#categoryFilter").change(function () {
+                table.draw();
+            });
+
+            // Redraw the datatable on filter change for the second filter
+            $("#anotherFilter").change(function () {
+                table.draw();
+            });
+
+
+
+            // Agrega un evento de cambio para el campo "desde"
+            $('#dateFrom').on('change', function () {
+                applyDateRangeFilter();
+            });
+
+            // Agrega un evento de cambio para el campo "hasta"
+            $('#dateTo').on('change', function () {
+                applyDateRangeFilter();
+            });
+
+            // Agrega un evento de clic para el botón de búsqueda por rango de fechas
+            $('#searchDateRangeButton').on('click', function () {
+                applyDateRangeFilter();
+            });
+
+            // Función para aplicar el filtro de rango de fechas
+            function applyDateRangeFilter() {
+                var dateFromValue = $('#dateFrom').val();
+                var dateToValue = $('#dateTo').val();
+
+                // Aplica el filtro de rango de fechas
+                table.column(1).search(dateFromValue + '|' + dateToValue, true, false).draw();
+            }
+
+     
+            table.draw();
+        });
+    </script>
+
+<script src="{% static 'js/config.js' %}"></script>
+    {% include 'app/footer.html' %}
+</body>
+
+</html>

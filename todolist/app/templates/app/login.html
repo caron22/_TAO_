@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Dark</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            background-color: #333;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+            padding: 30px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .login-container h2 {
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #444;
+            color: #fff;
+            box-sizing: border-box;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .login-button:hover {
+            background-color: #218838;
+        }
+
+        .login-input:focus,
+        .login-button:focus {
+            outline: none;
+            box-shadow: 0 0 5px #28a745;
+        }
+
+        .login-link {
+            color: #bbb;
+            text-decoration: none;
+            font-size: 0.9em;
+            margin-top: 10px;
+            display: block;
+        }
+
+        .login-link:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form action="#" method="post">
+            <input type="text" class="login-input" placeholder="Usuario" required>
+            <input type="password" class="login-input" placeholder="Contraseña" required>
+            <button type="submit" class="login-button">Iniciar Sesión</button>
+        </form>
+        <a href="#" class="login-link">¿Olvidaste tu contraseña?</a>
+    </div>
+</body>
+</html>

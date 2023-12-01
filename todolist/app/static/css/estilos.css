@@ -1,0 +1,89 @@
+/* -------------------------GLOBALES------------------------*/
+/* Elimina el contorno azul al enfocar en los elementos de entrada */
+input:focus,
+select:focus {
+    outline: none;
+    border-color: #1b1b1c !important; /* Cambia el color del borde al enfocar */
+    box-shadow: none !important; /* Asegúrate de que el sombreado también se elimine */
+}
+.text-right {
+    text-align: right;
+}   
+
+
+/* -------------------------GRUPOS CENTROS------------------------*/
+/*----------------------------DATATABLE--------------------------------------------------------------------*/
+/* Ajusta el tamaño, agrega bordes redondeados y cambia el color de fondo al cuadro que rodea los números de página */
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    background-color: #6c757d; /* Color de fondo de btn-secondary en Bootstrap */
+    color: #fff; /* Color del texto */
+    padding: 3px 10px; /* Ajusta el espacio interno según tus necesidades */
+    border-radius: 5px; /* Añade bordes redondeados */
+}
+
+/* Ajusta el tamaño, agrega bordes redondeados y cambia el color de fondo al cuadro del botón de paginación activo */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #5a6268; /* Color de fondo de btn-secondary en Bootstrap */
+    color: #fff; /* Color del texto */
+    padding: 3px 10px; /* Ajusta el espacio interno según tus necesidades */
+    border-radius: 5px; /* Añade bordes redondeados */
+}
+
+/* Ajusta el tamaño, agrega bordes redondeados y cambia el color de fondo al cuadro de los botones "Anterior" y "Siguiente" */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous, 
+.dataTables_wrapper .dataTables_paginate .paginate_button.next {
+    background-color: #6c757d; /* Color de fondo de btn-secondary en Bootstrap */
+    color: #fff; /* Color del texto */
+    padding: 3px 10px; /* Ajusta el espacio interno según tus necesidades */
+    border-radius: 5px; /* Añade bordes redondeados */
+}
+
+/* Cambia el color de fondo de los botones "Anterior" y "Siguiente" cuando están deshabilitados */
+.dataTables_wrapper .dataTables_paginate .paginate_button.previous.disabled, 
+.dataTables_wrapper .dataTables_paginate .paginate_button.next.disabled {
+    background-color: #f8f9fa; /* Cambia el color de fondo cuando los botones están deshabilitados */
+    color: #6c757d; /* Cambia el color del texto cuando los botones están deshabilitados */
+}
+
+/* Ajusta el espacio entre "Mostrar registros" y el cuadro de búsqueda */
+.dataTables_length,
+.dataTables_filter {
+    
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 20px; /* Puedes ajustar el valor según la cantidad de espacio que desees */
+}
+
+thead th:first-child {
+    border-radius: 6px 0 0 0; /* Redondea solo la esquina superior izquierda */
+    
+}
+/* Agrega una clase para la esquina superior derecha redondeada */
+.rounded-top-right {
+    border-radius: 0 6px 0 0;
+}
+#example thead th {
+        padding: 4px; /* Ajusta este valor según tus preferencias */
+    }
+.white-text {
+    color: white !important; /* Agrega !important para asegurar que la regla prevalezca */
+}
+
+
+#datatable_users tbody tr {
+    height: 30px; /* Ajusta la altura según tus preferencias */
+}
+
+
+
+/* Estilo para filas pares */
+#example tbody tr:nth-child(even) {
+    background-color: #e9e8e8; /* Cambia este color según tus preferencias */
+}
+#datatable_users tbody td,
+#example tbody td {
+    padding: 2px; /* Ajusta este valor según tus preferencias */
+}
+/* -------------------------------------------------*/
+
+

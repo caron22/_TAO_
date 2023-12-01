@@ -1,0 +1,103 @@
+{% extends 'app/home.html' %} <!--Trae el template-->
+{% block cuadro_style_custom %} <!--CSS Custom para este html-->
+<style>
+    thead th:first-child {
+    border-radius: 6px 0 0 0; /* Redondea solo la esquina superior izquierda */
+    }
+    thead th:last-child {
+    border-radius: 0 6px 0 0; /* Redondea solo la esquina superior derecha */
+    }
+    .white-text {
+    color: white !important; /* Agrega !important para asegurar que la regla prevalezca */
+    }
+    .text-right {
+    text-align: right;
+    }
+</style>       
+{% endblock cuadro_style_custom %}
+{% block titulo %}
+    Unidades de medida
+{% endblock titulo %}
+{% block cuadro_contenido %} <!--CONTENEDOR-->
+
+<!-- Primer cuadro -->
+<div class="col-md-12">
+    <div class="container my-4">
+        <div class="row">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Contenido del primer cuadro (formulario) -->
+                    {% if update %}
+                    <label for="subject" class="form-label"><b>Modificar Unidad</b></label>
+                        <form id="formulario" method="post" action={% url "update" %}>
+                            {% csrf_token %}
+                            <div class="row g-3 align-items-center">
+                                <div class="col-auto">
+                                    <input type="text" value="{{ update.subject }}" class="form-control" minlength="3" maxlength="30" autofocus required name="subject" id="subject" aria-describedby="emailHelp">
+                                </div>
+                                <div class="col-auto">
+                                    <input type="hidden" name="id" value="{{ update.id }}" />
+                                    <button type="submit" class="btn  w-100 btn-secondary">Guardar</button>
+                                </div>
+                            </div>
+                        </form>
+                    {% else %}
+
+                    <label for="subject" class="form-label"><b>Descripcion unidad de medida</b></label>
+                    <form id="formulario" method="post" action={% url "insert" %}>
+                        {% csrf_token %}
+                        <div class="row g-3 align-items-center">
+                            <div class="col-auto">
+                                <input type="text" class="form-control mb-2" placeholder="Escribe algo..." name="subject" id="subject" aria-describedby="emailHelp" minlength="3" maxlength="30" autofocus required>
+                            </div>
+                            <div class="col">
+                                <button type="submit" class="btn btn-secondary mb-2 w-30 "> Agregar </button>
+                                </div>
+                        </div>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Segundo cuadro -->
+<div class="col-md-12">
+    <div class="container my-4">
+        <div class="row">
+            <div class="card">
+                <div class="card-body">
+                    <!-- Contenido del segundo cuadro (tabla, formularios, etc.) -->
+                    <table id="datatable_users" class="table table-striped table-sm">
+
+                        <caption>DataTable TAO</caption>
+                        <thead>
+                            <tr>
+                                <th class="centered bg-secondary white-text" >&nbsp; ID</th>
+                                <th class="centered bg-secondary white-text" >Unidad de medida</th>
+                                <th class="centered bg-secondary white-text" ></th>
+                            </tr>
+                        </thead>
+                        {% block datos_input %}
+                            <!-- no es necesario sin plantilla -->
+                            {% for data in db_data %}
+                                <tr>
+                                    <td class="text-sm">&nbsp; {{ data.id }}</td>
+                                    <td class="text-sm">{{ data.subject }}</td>
+                                    <td class="text-right">
+                                        <a href={% url "update_form" data.id %} class="btn  btn-sm edicion btn-primary"><i class="fas fa-pen"></i></a>
+                                        <a href={% url "delete" data.id %} class="btn  btn-sm eliminarConfirmacion btn-danger  "><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endblock datos_input %}
+                        <!-- no es necesario sin plantilla -->
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+    
+    {% endblock cuadro_contenido %}
