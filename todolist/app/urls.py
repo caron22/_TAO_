@@ -15,12 +15,12 @@ urlpatterns = [
     path("centrodecostos_update_form/<int:centro_costos_id>", views.centrodecostos_update_form, name="centrodecostos_update_form"),
     path("centrodecostos_delete/<int:centro_costos_id>", views.centrodecostos_delete, name="centrodecostos_delete"),
    
-    path("conceptos/", views.conceptos_view, name='conceptos_view'),
+    #path("conceptos/", views.conceptos_view, name='conceptos_view'),
 
-    path("pruebas_insert/", views.pruebas_insert, name="pruebas_insert"),
-    path("pruebas/", views.pruebas_view, name='pruebas_view'),
-    path("pruebas_delete/<int:pruebasForm_id>", views.pruebas_delete, name="pruebas_delete"),
-    path("pruebas_edit/<int:pruebasForm_id>", views.pruebas_edit, name="pruebas_edit"),
+    #path("conceptos_insert/", views.conceptos_insert, name="conceptos_insert"),
+    path("concepto/", views.conceptos_view, name='conceptos_view'),
+    path("conceptos_delete/<int:conceptosForm_id>", views.conceptos_delete, name="conceptos_delete"),
+    path("conceptos_edit/<int:conceptosForm_id>", views.conceptos_edit, name="conceptos_edit"),
 
 
 

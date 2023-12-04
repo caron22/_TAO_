@@ -1,8 +1,8 @@
 from django import forms
 from .models import Concepto,Grupos_registro,Grupos_detalle
 from django.core.exceptions import ValidationError
-
-
+from django.db.models import Sum
+from django.contrib import messages
 class DetalleForm(forms.Form):
     nombre = forms.CharField(
         max_length=255,
@@ -72,20 +72,10 @@ class ConceptoForm(forms.ModelForm):
         }
 
         widgets = {
-                'codigo_ex': forms.TextInput(attrs={'class': 'form-control'}),
-                'centro_costos': forms.Select(attrs={'class': 'form-control'}),
-                'grupos_detalle': forms.Select(attrs={'class': 'form-control'}),
-            }
-        
-    def clean(self):
-        cleaned_data = super().clean()
-        centro_costos = cleaned_data.get('centro_costos')
-        grupos_detalle = cleaned_data.get('grupos_detalle')
-        if not centro_costos and not grupos_detalle:
-            raise forms.ValidationError("Debe seleccionar al menos un campo.")
-        if centro_costos and grupos_detalle:
-            raise forms.ValidationError("Solo se puede seleccionar uno de los dos campos")
-
-        return cleaned_data
-
+            'codigo_ex': forms.TextInput(attrs={'class': 'form-control'}),
+            'centro_costos': forms.Select(attrs={'class': 'form-control'}),
+            'grupos_detalle': forms.Select(attrs={'class': 'form-control'}),
+        }
+    
+   
 #--------------------------

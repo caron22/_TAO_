@@ -155,41 +155,15 @@ def centrodecostos_update_form(request, centro_costos_id):
     return render(request, "app/Centrodecostos.html", context)
 
 #--------------------------
-def conceptos_view1(request):
-    db_data = Concepto.objects.all()
-    centro_costos_data = Centro_costos.objects.all()
-    subjects = Task.objects.all()
-
-    context = {
-        "db_data": db_data[::-1],
-        "centro_costos_data": centro_costos_data,
-        "update": None,
-        "subjects": subjects,
-    }
-
-    return render(request, "app/conceptos.html", context)
 
 
-def conceptos_view(request):
-    if request.method == 'POST':
-        form = ConceptoForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('conceptos_view')
-    else:
-        form = ConceptoForm()
-
-    context = {
-        'form': form,
-        'db_data': Concepto.objects.all(),
-    }
-
-    return render(request, 'app/conceptos.html', context)
 
 
 #----------CONCEPTOS PRUEBAS----------------
 
-def pruebas_insert(request):
+
+
+def conceptos_insert_sinusocreo(request):
     try:
         codigo_ex = request.POST.get("codigo_ex")
         
@@ -199,6 +173,11 @@ def pruebas_insert(request):
         print("paso por aca")
         if codigo_ex == "" or task_id is None or (centro_costos_id and grupos_detalle_id):
             raise ValueError("Los campos no pueden estar vacíos y solo se puede seleccionar uno de los dos campos: centro_costos o grupos_detalle.")
+        if grupos_detalle_id:
+                grupos_detalle = Grupos_detalle.objects.get(id=grupos_detalle_id)
+                porcentaje_acumulado = grupos_detalle.porcentaje_acumulado
+                if porcentaje_acumulado < 100:
+                    raise ValueError("El grupo seleccionado no tiene el 100% en Grupos_detalle.")
 
 
         tarea = Task.objects.get(id=task_id)
@@ -213,45 +192,94 @@ def pruebas_insert(request):
         )
         nuevo_concepto.save()
 
-        return HttpResponseRedirect(reverse("pruebas_view"))
+        return HttpResponseRedirect(reverse("conceptos_view"))
     except (Task.DoesNotExist, Centro_costos.DoesNotExist, Grupos_detalle.DoesNotExist, ValueError) as err:
         print(err)
-        return HttpResponseRedirect(reverse("pruebas_view"))
+        return HttpResponseRedirect(reverse("conceptos_view"))
 
-def pruebas_delete(request, pruebasForm_id):
-    db_data = Concepto.objects.filter(id=pruebasForm_id)
+
+
+def conceptos_delete(request, conceptosForm_id):
+    db_data = Concepto.objects.filter(id=conceptosForm_id)
     db_data.delete()
-    return HttpResponseRedirect(reverse("pruebas_view"))
+    return HttpResponseRedirect(reverse("conceptos_view"))
 
-def pruebas_view(request):
-    
+from django.shortcuts import render, redirect
+from .forms import ConceptoForm
+from django.contrib import messages
+from .models import Concepto, Grupos_detalle, Centro_costos
+
+def conceptos_view(request):
+    print("paso por aca")
     if request.method == 'POST':
+        print("paso por aca11")
         form = ConceptoForm(request.POST)
+   
         if form.is_valid():
-            form.save()
-            return redirect('pruebas_view')
+            grupos_detalle = form.cleaned_data.get('grupos_detalle')
+            centro_costos = form.cleaned_data.get('centro_costos')
+
+            if not centro_costos and not grupos_detalle:
+                messages.success(request, 'Debe seleccionar al menos un campo.', extra_tags='custom-error-campo')
+            elif centro_costos and grupos_detalle:
+                print("Solo se puede seleccionar uno de los dos campos.")
+                messages.success(request, 'Solo se puede seleccionar uno de los dos campos.', extra_tags='custom-error-campo-uno')
+            elif grupos_detalle:
+                porcentaje_acumulado = grupos_detalle.porcentaje_acumulado
+                if porcentaje_acumulado < 100:
+                    print("El grupo seleccionado no tiene el 100% ")
+                    messages.success(request, 'El grupo seleccionado no tiene el 100% ', extra_tags='custom-error-campo-100')
+                
+            if not messages.get_messages(request):
+                form.save()
+                print( "Concepto guardado exitosamente.")
+                messages.success(request, 'Concepto guardado exitosamente.', extra_tags='custom-ok')
+                return redirect('conceptos_view')
     else:
         form = ConceptoForm()
 
-    grupos_detalle_filtros = Grupos_detalle.objects.all()  # Obtener todos los grupos_detalle
-    centro_costos_filtros = Centro_costos.objects.all()  # Obtener todos los grupos_detalle
-    
+    grupos_detalle_filtros = Grupos_detalle.objects.all()
+    centro_costos_filtros = Centro_costos.objects.all()
+
     context = {
         'form': form,
         'db_data': Concepto.objects.all(),
-        'Grupos_detalle_filtros': grupos_detalle_filtros,  # Pasar grupos_detalle a la plantilla
-        'Centro_costos_filtros': centro_costos_filtros,  # Pasar grupos_detalle a la plantilla
+        'Grupos_detalle_filtros': grupos_detalle_filtros,
+        'Centro_costos_filtros': centro_costos_filtros,
     }
 
-    return render(request, 'app/pruebas.html', context)
+    return render(request, 'app/conceptos.html', context)
 
-def pruebas_edit(request, pruebasForm_id):
-    concepto = get_object_or_404(Concepto, id=pruebasForm_id)
 
+def conceptos_edit(request, conceptosForm_id):
+    concepto = get_object_or_404(Concepto, id=conceptosForm_id)
     form = ConceptoForm(request.POST, instance=concepto)
-    if form.is_valid():
-        form.save()
-        return redirect('pruebas_view')  # Cambiar a la vista principal si la edición es exitosa
+
+    if form.is_valid(): 
+        if form.is_valid():
+            grupos_detalle = form.cleaned_data.get('grupos_detalle')
+            centro_costos = form.cleaned_data.get('centro_costos')
+
+            if not centro_costos and not grupos_detalle:
+                messages.success(request, 'Debe seleccionar al menos un campo.', extra_tags='custom-error-campo')
+            elif centro_costos and grupos_detalle:
+                print("Solo se puede seleccionar uno de los dos campos.")
+                messages.success(request, 'Solo se puede seleccionar uno de los dos campos.', extra_tags='custom-error-campo-uno')
+            elif grupos_detalle:
+                porcentaje_acumulado = grupos_detalle.porcentaje_acumulado
+                if porcentaje_acumulado < 100:
+                    print("El grupo seleccionado no tiene el 100% ")
+                    messages.success(request, 'El grupo seleccionado no tiene el 100% ', extra_tags='custom-error-campo-100')
+                
+            if not messages.get_messages(request):
+                form.save()
+                print( "Concepto guardado exitosamente.")
+                messages.success(request, 'Concepto guardado exitosamente.', extra_tags='custom-ok')
+                form.save()
+                return redirect('conceptos_view')
+            
+        
+        #return redirect('conceptos_view')  # Cambiar a la vista principal si la edición es exitosa
     else:
         form = ConceptoForm(instance=concepto)
 
@@ -263,10 +291,10 @@ def pruebas_edit(request, pruebasForm_id):
         'Unidad_medida_filtros': Task.objects.all(),
         'Grupos_detalle_filtros': grupos_detalle_filtros,  # Pasar grupos_detalle a la plantilla
         'edit_mode': True,
-        'edit_id': pruebasForm_id,
+        'edit_id': conceptosForm_id,
     }
 
-    return render(request, 'app/pruebas.html', context)
+    return render(request, 'app/conceptos.html', context)
 
 
 #--------------------------
